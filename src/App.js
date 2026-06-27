@@ -7,7 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
 import Budget from './pages/Budget';
 import Plans from './pages/Plans';
-import Layout from './components/Layout';
+import Landing from './pages/Landing';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -26,7 +26,7 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          import Landing from './pages/Landing';
+          
   <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/cadastro" element={<PublicRoute><Register /></PublicRoute>} />
