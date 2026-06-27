@@ -13,7 +13,7 @@ const app = express();
 
 app.use('/webhooks', express.raw({ type: 'application/json' }), webhookRoutes);
 app.use(helmet());
-app.use(cors({ origin: process.env.APP_URL, credentials: true }));
+app.use(cors({ origin: [process.env.APP_URL, process.env.FRONTEND_URL, 'https://fincontrol-xi.vercel.app'], credentials: true }));
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
