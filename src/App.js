@@ -8,7 +8,7 @@ import Transactions from './pages/Transactions';
 import Budget from './pages/Budget';
 import Plans from './pages/Plans';
 import Landing from './pages/Landing';
-import Layout from './components/Layout';
+import Layout from './components/Layout'; 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', color:'#6c63ff' }}>Carregando...</div>;
