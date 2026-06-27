@@ -1,6 +1,4 @@
 const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -11,18 +9,18 @@ const webhookRoutes = require('./routes/webhooks');
 
 const app = express();
 
+// Manual CORS headers - must be FIRST
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  next();
+});
+
 // Webhook must come before express.json()
 app.use('/webhooks', express.raw({ type: 'application/json' }), webhookRoutes);
 
-// CORS — allow all origins in production for now
-app.use(cors({
-  origin: true,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
-
-app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
