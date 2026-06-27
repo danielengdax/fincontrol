@@ -41,7 +41,7 @@ export default function Login() {
         width: '100%', maxWidth: 420,
         background: 'var(--bg-card)',
         border: '1px solid var(--border)',
-        borderRadius: var(--radius-lg),
+        borderRadius: 16,
         padding: 40,
         boxShadow: '0 0 60px #6c63ff11',
         animation: 'fadeIn 0.4s ease',
