@@ -43,7 +43,7 @@ export default function Plans() {
     if (!plan.priceId) return;
     setLoading(plan.id);
     try {
-      const res = await api.post('/subscriptions/checkout', { price_id: plan.priceId });
+      const res = await api.post('/subscriptions/checkout', { plan: plan.id });
       window.location.href = res.data.url;
     } catch (err) {
       alert(err.response?.data?.error || 'Erro ao iniciar checkout.');
