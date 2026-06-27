@@ -11,9 +11,18 @@ const webhookRoutes = require('./routes/webhooks');
 
 const app = express();
 
+// Webhook must come before express.json()
 app.use('/webhooks', express.raw({ type: 'application/json' }), webhookRoutes);
-app.use(helmet());
-app.use(cors({ origin: [process.env.APP_URL, process.env.FRONTEND_URL, 'https://fincontrol-xi.vercel.app'], credentials: true }));
+
+// CORS — allow all origins in production for now
+app.use(cors({
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
@@ -25,5 +34,4 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
 module.exports = app;
