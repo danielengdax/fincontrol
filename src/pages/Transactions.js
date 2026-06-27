@@ -30,7 +30,7 @@ export default function Transactions() {
     try {
       await api.post('/transactions', { ...form, amount: parseFloat(form.amount) });
       setShowForm(false);
-      setForm({ description: '', amount: '', type: 'expense', category_id: '' });
+      setForm({ description: '', amount: '', type: 'expense', category_id: '', date: new Date().toISOString().split('T')[0] });
       load();
     } catch (err) {
       setError(err.response?.data?.error || 'Erro ao salvar transação.');
@@ -60,7 +60,6 @@ export default function Transactions() {
         </button>
       </div>
 
-      {/* Form */}
       {showForm && (
         <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, marginBottom: 24 }}>
           <h3 style={{ marginBottom: 16, fontSize: 15 }}>Nova Transação</h3>
@@ -89,10 +88,10 @@ export default function Transactions() {
                   {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
-                 <label style={lbl}>Data</label>
-                 <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} required style={inp} />
-              </div>   
-                
+              <div>
+                <label style={lbl}>Data</label>
+                <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} required style={inp} />
+              </div>
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
               <button type="submit" disabled={saving} style={{ background: 'linear-gradient(135deg, #6c63ff, #00d4ff)', border: 'none', borderRadius: 8, padding: '10px 20px', color: '#fff', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer' }}>
@@ -106,7 +105,6 @@ export default function Transactions() {
         </div>
       )}
 
-      {/* List */}
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
         {loading ? (
           <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Carregando...</div>
@@ -117,12 +115,7 @@ export default function Transactions() {
           </div>
         ) : (
           transactions.map((tx, i) => (
-            <div key={tx.id} style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: '14px 20px',
-              borderBottom: i < transactions.length - 1 ? '1px solid var(--border)' : 'none',
-              transition: 'background 0.1s',
-            }}
+            <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: i < transactions.length - 1 ? '1px solid var(--border)' : 'none', transition: 'background 0.1s' }}
               onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
