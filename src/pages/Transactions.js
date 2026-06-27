@@ -5,7 +5,13 @@ export default function Transactions() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ description: '', amount: '', type: 'expense', category_id: '', date: new Date().toISOString().split('T')[0] });
+
+  const today = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  };
+
+  const [form, setForm] = useState({ description: '', amount: '', type: 'expense', category_id: '', date: today() });
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -31,7 +37,7 @@ export default function Transactions() {
       const dbType = form.type === 'income' ? 'in' : 'out';
       await api.post('/transactions', { ...form, amount: parseFloat(form.amount), type: dbType });
       setShowForm(false);
-      setForm({ description: '', amount: '', type: 'expense', category_id: '', date: new Date().toISOString().split('T')[0] });
+      setForm({ description: '', amount: '', type: 'expense', category_id: '', date: today() });
       load();
     } catch (err) {
       setError(err.response?.data?.error || 'Erro ao salvar transação.');
@@ -127,7 +133,7 @@ export default function Transactions() {
                 <div>
                   <p style={{ fontWeight: 500, fontSize: 14 }}>{tx.description}</p>
                   <p style={{ color: 'var(--text-muted)', fontSize: 11, marginTop: 2 }}>
-                    {tx.category_name || 'Sem categoria'} · {new Date(tx.date || tx.created_at).toLocaleDateString('pt-BR')}
+                    {tx.category_name || 'Sem categoria'} · {tx.date ? new Date(tx.date + 'T12:00:00').toLocaleDateString('pt-BR') : ''}
                   </p>
                 </div>
               </div>
