@@ -17,8 +17,8 @@ export default function Transactions() {
       api.get('/transactions'),
       api.get('/categories').catch(() => ({ data: { categories: [] } })),
     ]).then(([txRes, catRes]) => {
-      setTransactions(txRes.data.transactions || []);
-      setCategories(catRes.data.categories || []);
+      setTransactions(txRes.data.transactions || txRes.data || []);
+      setCategories(catRes.data.categories || catRes.data || []);
     }).finally(() => setLoading(false));
   };
 
@@ -28,7 +28,8 @@ export default function Transactions() {
     e.preventDefault();
     setError(''); setSaving(true);
     try {
-      await api.post('/transactions', { ...form, amount: parseFloat(form.amount) });
+      const dbType = form.type === 'income' ? 'in' : 'out';
+      await api.post('/transactions', { ...form, amount: parseFloat(form.amount), type: dbType });
       setShowForm(false);
       setForm({ description: '', amount: '', type: 'expense', category_id: '', date: new Date().toISOString().split('T')[0] });
       load();
@@ -120,8 +121,8 @@ export default function Transactions() {
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <div style={{ width: 38, height: 38, borderRadius: 10, background: tx.type === 'income' ? '#00ff8822' : '#ff6b9d22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
-                  {tx.type === 'income' ? '↑' : '↓'}
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: tx.type === 'in' ? '#00ff8822' : '#ff6b9d22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
+                  {tx.type === 'in' ? '↑' : '↓'}
                 </div>
                 <div>
                   <p style={{ fontWeight: 500, fontSize: 14 }}>{tx.description}</p>
@@ -131,8 +132,8 @@ export default function Transactions() {
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                <span style={{ fontWeight: 700, fontSize: 15, color: tx.type === 'income' ? '#00ff88' : '#ff6b9d' }}>
-                  {tx.type === 'income' ? '+' : '-'}{fmt(tx.amount)}
+                <span style={{ fontWeight: 700, fontSize: 15, color: tx.type === 'in' ? '#00ff88' : '#ff6b9d' }}>
+                  {tx.type === 'in' ? '+' : '-'}{fmt(tx.amount)}
                 </span>
                 <button onClick={() => handleDelete(tx.id)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 16, padding: 4 }}
                   onMouseEnter={e => e.target.style.color = '#ff6b6b'}
