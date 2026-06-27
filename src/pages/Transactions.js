@@ -5,7 +5,7 @@ export default function Transactions() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ description: '', amount: '', type: 'expense', category_id: '' });
+  const [form, setForm] = useState({ description: '', amount: '', type: 'expense', category_id: '', date: new Date().toISOString().split('T')[0] });
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -89,6 +89,10 @@ export default function Transactions() {
                   {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
+                 <label style={lbl}>Data</label>
+                 <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} required style={inp} />
+              </div>   
+                
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
               <button type="submit" disabled={saving} style={{ background: 'linear-gradient(135deg, #6c63ff, #00d4ff)', border: 'none', borderRadius: 8, padding: '10px 20px', color: '#fff', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer' }}>
