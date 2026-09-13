@@ -6,6 +6,11 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LabelList,
 } from 'recharts';
 
+const MONTH_NAMES = [
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+];
+
 function StatCard({ label, value, sub, color, icon }) {
   return (
     <div style={{
@@ -22,6 +27,36 @@ function StatCard({ label, value, sub, color, icon }) {
         </div>
         <span style={{ fontSize: 28 }}>{icon}</span>
       </div>
+    </div>
+  );
+}
+
+function MonthSelector({ month, year, onPrev, onNext }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 16,
+      background: 'var(--bg-card)', border: '1px solid var(--border)',
+      borderRadius: 12, padding: '10px 16px', marginBottom: 24, width: 'fit-content',
+    }}>
+      <button
+        onClick={onPrev}
+        aria-label="Mês anterior"
+        style={{
+          background: 'transparent', border: '1px solid var(--border)', borderRadius: 8,
+          color: '#fff', width: 32, height: 32, cursor: 'pointer', fontSize: 16,
+        }}
+      >‹</button>
+      <span style={{ fontWeight: 700, fontSize: 14, minWidth: 140, textAlign: 'center' }}>
+        {MONTH_NAMES[month - 1]} {year}
+      </span>
+      <button
+        onClick={onNext}
+        aria-label="Próximo mês"
+        style={{
+          background: 'transparent', border: '1px solid var(--border)', borderRadius: 8,
+          color: '#fff', width: 32, height: 32, cursor: 'pointer', fontSize: 16,
+        }}
+      >›</button>
     </div>
   );
 }
@@ -58,7 +93,7 @@ function ExpensesByCategoryChart({ data }) {
     return (
       <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-muted)' }}>
         <p style={{ fontSize: 32, marginBottom: 8 }}>📊</p>
-        <p>Sem despesas registradas ainda.</p>
+        <p>Sem despesas registradas nesse mês.</p>
       </div>
     );
   }
@@ -75,7 +110,7 @@ function ExpensesByCategoryChart({ data }) {
         />
         <YAxis
           tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
-          tickFormatter={(v) => fmt(v).replace(/ /, ' ')}
+          tickFormatter={(v) => fmt(v).replace(/ /, ' ')}
           width={90}
         />
         <Tooltip content={<CategoryTooltip />} cursor={{ fill: '#ffffff0d' }} />
@@ -97,15 +132,19 @@ function ExpensesByCategoryChart({ data }) {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const now = new Date();
+  const [month, setMonth] = useState(now.getMonth() + 1);
+  const [year, setYear] = useState(now.getFullYear());
   const [summary, setSummary] = useState(null);
   const [byCategory, setByCategory] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     Promise.all([
-      api.get('/transactions/summary').catch(() => ({ data: {} })),
-      api.get('/transactions').catch(() => ({ data: [] })),
+      api.get('/transactions/summary', { params: { month, year } }).catch(() => ({ data: {} })),
+      api.get('/transactions', { params: { month, year } }).catch(() => ({ data: [] })),
     ]).then(([sumRes, txRes]) => {
       setSummary(sumRes.data?.summary || {});
       setByCategory(sumRes.data?.byCategory || []);
@@ -113,13 +152,23 @@ export default function Dashboard() {
       const list = Array.isArray(txList) ? txList : [];
       setTransactions(list.slice(0, 5));
     }).finally(() => setLoading(false));
-  }, []);
+  }, [month, year]);
+
+  const goPrevMonth = () => {
+    if (month === 1) { setMonth(12); setYear((y) => y - 1); }
+    else setMonth((m) => m - 1);
+  };
+  const goNextMonth = () => {
+    if (month === 12) { setMonth(1); setYear((y) => y + 1); }
+    else setMonth((m) => m + 1);
+  };
 
   const income = parseFloat(summary?.total_in || 0);
   const expenses = parseFloat(summary?.total_out || 0);
   const balance = income - expenses;
   const count = parseInt(summary?.total_count || 0);
   const categoryTotals = buildCategoryTotals(byCategory);
+  const monthLabel = `${MONTH_NAMES[month - 1]}`;
 
   return (
     <div style={{ animation: 'fadeIn 0.3s ease' }}>
@@ -153,34 +202,36 @@ export default function Dashboard() {
         </div>
       )}
 
+      <MonthSelector month={month} year={year} onPrev={goPrevMonth} onNext={goNextMonth} />
+
       {loading ? (
         <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 40 }}>Carregando...</div>
       ) : (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 28 }}>
-            <StatCard label="Receitas" value={fmt(income)} icon="↑" color="#00ff88" sub="Este mês" />
-            <StatCard label="Despesas" value={fmt(expenses)} icon="↓" color="#ff6b9d" sub="Este mês" />
-            <StatCard label="Saldo" value={fmt(balance)} icon="◈" color="#6c63ff" sub="Balanço atual" />
-            <StatCard label="Transações" value={count} icon="≡" color="#00d4ff" sub="Este mês" />
+            <StatCard label="Receitas" value={fmt(income)} icon="↑" color="#00ff88" sub={monthLabel} />
+            <StatCard label="Despesas" value={fmt(expenses)} icon="↓" color="#ff6b9d" sub={monthLabel} />
+            <StatCard label="Saldo" value={fmt(balance)} icon="◈" color="#6c63ff" sub={monthLabel} />
+            <StatCard label="Transações" value={count} icon="≡" color="#00d4ff" sub={monthLabel} />
           </div>
 
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, marginBottom: 24 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h2 style={{ fontSize: 16 }}>Maiores Gastos por Categoria <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: 12 }}>(este mês)</span></h2>
+              <h2 style={{ fontSize: 16 }}>Maiores Gastos por Categoria <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: 12 }}>({monthLabel.toLowerCase()})</span></h2>
             </div>
             <ExpensesByCategoryChart data={categoryTotals} />
           </div>
 
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 24 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h2 style={{ fontSize: 16 }}>Transações Recentes</h2>
+              <h2 style={{ fontSize: 16 }}>Transações do Mês</h2>
               <Link to="/transacoes" style={{ color: '#6c63ff', fontSize: 13 }}>Ver todas →</Link>
             </div>
             {transactions.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-muted)' }}>
                 <p style={{ fontSize: 32, marginBottom: 8 }}>📊</p>
-                <p>Nenhuma transação ainda.</p>
-                <Link to="/transacoes" style={{ color: '#6c63ff', fontSize: 13 }}>Adicionar primeira transação →</Link>
+                <p>Nenhuma transação nesse mês.</p>
+                <Link to="/transacoes" style={{ color: '#6c63ff', fontSize: 13 }}>Adicionar transação →</Link>
               </div>
             ) : (
               transactions.map((tx, i) => (
