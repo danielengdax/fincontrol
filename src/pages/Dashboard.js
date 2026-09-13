@@ -30,18 +30,10 @@ const fmt = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency:
 
 const FALLBACK_COLORS = ['#ff6b9d', '#6c63ff', '#00d4ff', '#fbbf24', '#00ff88', '#f472b6', '#a78bfa', '#ff6b6b'];
 
-function buildCategoryTotals(transactions) {
-  const totals = {};
-  transactions
-    .filter((tx) => tx.type === 'out')
-    .forEach((tx) => {
-      const name = tx.category_name || 'Sem categoria';
-      if (!totals[name]) {
-        totals[name] = { name, value: 0, color: tx.category_color || null };
-      }
-      totals[name].value += parseFloat(tx.amount || 0);
-    });
-  return Object.values(totals)
+function buildCategoryTotals(byCategory) {
+  return (byCategory || [])
+    .map((c) => ({ name: c.name, value: parseFloat(c.total || 0), color: c.color }))
+    .filter((c) => c.value > 0)
     .sort((a, b) => b.value - a.value)
     .slice(0, 8)
     .map((item, i) => ({ ...item, color: item.color || FALLBACK_COLORS[i % FALLBACK_COLORS.length] }));
@@ -106,8 +98,8 @@ function ExpensesByCategoryChart({ data }) {
 export default function Dashboard() {
   const { user } = useAuth();
   const [summary, setSummary] = useState(null);
+  const [byCategory, setByCategory] = useState([]);
   const [transactions, setTransactions] = useState([]);
-  const [allTransactions, setAllTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -115,10 +107,10 @@ export default function Dashboard() {
       api.get('/transactions/summary').catch(() => ({ data: {} })),
       api.get('/transactions').catch(() => ({ data: [] })),
     ]).then(([sumRes, txRes]) => {
-      setSummary(sumRes.data?.summary || sumRes.data || {});
+      setSummary(sumRes.data?.summary || {});
+      setByCategory(sumRes.data?.byCategory || []);
       const txList = txRes.data?.transactions || txRes.data || [];
       const list = Array.isArray(txList) ? txList : [];
-      setAllTransactions(list);
       setTransactions(list.slice(0, 5));
     }).finally(() => setLoading(false));
   }, []);
@@ -127,7 +119,7 @@ export default function Dashboard() {
   const expenses = parseFloat(summary?.total_out || 0);
   const balance = income - expenses;
   const count = parseInt(summary?.total_count || 0);
-  const categoryTotals = buildCategoryTotals(allTransactions);
+  const categoryTotals = buildCategoryTotals(byCategory);
 
   return (
     <div style={{ animation: 'fadeIn 0.3s ease' }}>
@@ -174,7 +166,7 @@ export default function Dashboard() {
 
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, marginBottom: 24 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h2 style={{ fontSize: 16 }}>Maiores Gastos por Categoria</h2>
+              <h2 style={{ fontSize: 16 }}>Maiores Gastos por Categoria <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: 12 }}>(este mês)</span></h2>
             </div>
             <ExpensesByCategoryChart data={categoryTotals} />
           </div>
