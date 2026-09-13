@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LabelList,
 } from 'recharts';
 
 function StatCard({ label, value, sub, color, icon }) {
@@ -72,10 +72,10 @@ function ExpensesByCategoryChart({ data }) {
   }
   return (
     <ResponsiveContainer width="100%" height={280}>
-      <BarChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+      <BarChart data={data} margin={{ top: 28, right: 16, left: 0, bottom: 8 }}>
         <XAxis
           dataKey="name"
-          tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
+          tick={{ fill: '#ffffff', fontSize: 12, fontWeight: 700 }}
           interval={0}
           angle={-20}
           textAnchor="end"
@@ -88,9 +88,15 @@ function ExpensesByCategoryChart({ data }) {
         />
         <Tooltip content={<CategoryTooltip />} cursor={{ fill: '#ffffff0d' }} />
         <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-          {data.map((entry, i) => (
+          {data.map((entry) => (
             <Cell key={entry.name} fill={entry.color} />
           ))}
+          <LabelList
+            dataKey="value"
+            position="top"
+            formatter={fmt}
+            style={{ fill: '#ffffff', fontWeight: 700, fontSize: 12 }}
+          />
         </Bar>
       </BarChart>
     </ResponsiveContainer>
