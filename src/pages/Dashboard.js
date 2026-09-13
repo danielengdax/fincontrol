@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
+} from 'recharts';
 
 function StatCard({ label, value, sub, color, icon }) {
   return (
@@ -23,10 +26,82 @@ function StatCard({ label, value, sub, color, icon }) {
   );
 }
 
+const fmt = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+
+const FALLBACK_COLORS = ['#ff6b9d', '#6c63ff', '#00d4ff', '#fbbf24', '#00ff88', '#f472b6', '#a78bfa', '#ff6b6b'];
+
+function buildCategoryTotals(transactions) {
+  const totals = {};
+  transactions
+    .filter((tx) => tx.type === 'out')
+    .forEach((tx) => {
+      const name = tx.category_name || 'Sem categoria';
+      if (!totals[name]) {
+        totals[name] = { name, value: 0, color: tx.category_color || null };
+      }
+      totals[name].value += parseFloat(tx.amount || 0);
+    });
+  return Object.values(totals)
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 8)
+    .map((item, i) => ({ ...item, color: item.color || FALLBACK_COLORS[i % FALLBACK_COLORS.length] }));
+}
+
+function CategoryTooltip({ active, payload }) {
+  if (!active || !payload || !payload.length) return null;
+  const item = payload[0].payload;
+  return (
+    <div style={{
+      background: 'var(--bg-card)', border: '1px solid var(--border)',
+      borderRadius: 8, padding: '8px 12px', fontSize: 13,
+    }}>
+      <strong>{item.name}</strong>
+      <div style={{ color: '#ff6b9d', marginTop: 2 }}>{fmt(item.value)}</div>
+    </div>
+  );
+}
+
+function ExpensesByCategoryChart({ data }) {
+  if (!data.length) {
+    return (
+      <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-muted)' }}>
+        <p style={{ fontSize: 32, marginBottom: 8 }}>📊</p>
+        <p>Sem despesas registradas ainda.</p>
+      </div>
+    );
+  }
+  return (
+    <ResponsiveContainer width="100%" height={280}>
+      <BarChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+        <XAxis
+          dataKey="name"
+          tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
+          interval={0}
+          angle={-20}
+          textAnchor="end"
+          height={60}
+        />
+        <YAxis
+          tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
+          tickFormatter={(v) => fmt(v).replace(/ /, ' ')}
+          width={90}
+        />
+        <Tooltip content={<CategoryTooltip />} cursor={{ fill: '#ffffff0d' }} />
+        <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+          {data.map((entry, i) => (
+            <Cell key={entry.name} fill={entry.color} />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const [summary, setSummary] = useState(null);
   const [transactions, setTransactions] = useState([]);
+  const [allTransactions, setAllTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,16 +111,17 @@ export default function Dashboard() {
     ]).then(([sumRes, txRes]) => {
       setSummary(sumRes.data?.summary || sumRes.data || {});
       const txList = txRes.data?.transactions || txRes.data || [];
-      setTransactions(Array.isArray(txList) ? txList.slice(0, 5) : []);
+      const list = Array.isArray(txList) ? txList : [];
+      setAllTransactions(list);
+      setTransactions(list.slice(0, 5));
     }).finally(() => setLoading(false));
   }, []);
-
-  const fmt = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
 
   const income = parseFloat(summary?.total_in || 0);
   const expenses = parseFloat(summary?.total_out || 0);
   const balance = income - expenses;
   const count = parseInt(summary?.total_count || 0);
+  const categoryTotals = buildCategoryTotals(allTransactions);
 
   return (
     <div style={{ animation: 'fadeIn 0.3s ease' }}>
@@ -88,6 +164,13 @@ export default function Dashboard() {
             <StatCard label="Despesas" value={fmt(expenses)} icon="↓" color="#ff6b9d" sub="Este mês" />
             <StatCard label="Saldo" value={fmt(balance)} icon="◈" color="#6c63ff" sub="Balanço atual" />
             <StatCard label="Transações" value={count} icon="≡" color="#00d4ff" sub="Este mês" />
+          </div>
+
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, marginBottom: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <h2 style={{ fontSize: 16 }}>Maiores Gastos por Categoria</h2>
+            </div>
+            <ExpensesByCategoryChart data={categoryTotals} />
           </div>
 
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 24 }}>
