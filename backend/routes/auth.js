@@ -14,6 +14,7 @@ const DEFAULT_CATEGORIES = [
   { name: 'Lazer',       color: '#fbbf24', icon: 'ti-device-gamepad' },
   { name: 'Educação',    color: '#f472b6', icon: 'ti-school' },
   { name: 'Salário',     color: '#00e5a0', icon: 'ti-cash' },
+  { name: 'Cartão de Crédito', color: '#f97316', icon: 'ti-credit-card' },
   { name: 'Outros',      color: '#888780', icon: 'ti-dots' },
 ];
 
