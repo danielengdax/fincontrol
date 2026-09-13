@@ -16,6 +16,9 @@ const DEFAULT_CATEGORIES = [
   { name: 'Salário',     color: '#00e5a0', icon: 'ti-cash' },
   { name: 'Cartão de Crédito', color: '#f97316', icon: 'ti-credit-card' },
   { name: 'Assinaturas', color: '#06b6d4', icon: 'ti-refresh' },
+  { name: 'Bebidas',     color: '#d946ef', icon: 'ti-glass' },
+  { name: 'Pets',        color: '#84cc16', icon: 'ti-paw' },
+  { name: 'Automotivo',  color: '#0ea5e9', icon: 'ti-car-4wd' },
   { name: 'Outros',      color: '#888780', icon: 'ti-dots' },
 ];
 
