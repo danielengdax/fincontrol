@@ -9,7 +9,10 @@ import {
 
 const COLOR_RECEITAS = '#00ff88';
 const COLOR_DESPESAS = '#ff3b3b';
+const COLOR_RECEITAS_NEON = '#39ff14';
+const COLOR_DESPESAS_NEON = '#ff073a';
 const LABEL_STYLE = { fill: '#ffffff', fontWeight: 700, fontSize: 11 };
+const NEON_GLOW = (color) => ({ filter: `drop-shadow(0 0 6px ${color}) drop-shadow(0 0 2px ${color})` });
 
 const MONTH_ABBR = [
   'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
@@ -140,10 +143,22 @@ export default function Comparativo() {
                 />
                 <Tooltip content={<ComparativoTooltip />} cursor={{ stroke: 'var(--border)' }} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Line type="monotone" dataKey="Receitas" stroke={COLOR_RECEITAS} strokeWidth={3} dot={{ r: 4, fill: COLOR_RECEITAS }}>
+                <Line
+                  type="monotone" dataKey="Receitas"
+                  stroke={COLOR_RECEITAS_NEON} strokeWidth={3}
+                  dot={{ r: 5, fill: COLOR_RECEITAS_NEON, stroke: '#0d0d14', strokeWidth: 2 }}
+                  activeDot={{ r: 7 }}
+                  style={NEON_GLOW(COLOR_RECEITAS_NEON)}
+                >
                   <LabelList dataKey="Receitas" position="top" formatter={fmt} style={LABEL_STYLE} />
                 </Line>
-                <Line type="monotone" dataKey="Despesas" stroke={COLOR_DESPESAS} strokeWidth={3} dot={{ r: 4, fill: COLOR_DESPESAS }}>
+                <Line
+                  type="monotone" dataKey="Despesas"
+                  stroke={COLOR_DESPESAS_NEON} strokeWidth={3}
+                  dot={{ r: 5, fill: COLOR_DESPESAS_NEON, stroke: '#0d0d14', strokeWidth: 2 }}
+                  activeDot={{ r: 7 }}
+                  style={NEON_GLOW(COLOR_DESPESAS_NEON)}
+                >
                   <LabelList dataKey="Despesas" position="top" formatter={fmt} style={LABEL_STYLE} />
                 </Line>
               </LineChart>
