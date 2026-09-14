@@ -3,16 +3,12 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cell, LabelList,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LabelList,
 } from 'recharts';
 
 const MONTH_NAMES = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
-];
-
-const MONTH_ABBR = [
-  'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
 ];
 
 function StatCard({ label, value, sub, color, icon }) {
@@ -134,54 +130,6 @@ function ExpensesByCategoryChart({ data }) {
   );
 }
 
-function MonthlyTooltip({ active, payload, label }) {
-  if (!active || !payload || !payload.length) return null;
-  return (
-    <div style={{
-      background: 'var(--bg-card)', border: '1px solid var(--border)',
-      borderRadius: 8, padding: '8px 12px', fontSize: 13,
-    }}>
-      <strong>{label}</strong>
-      {payload.map((p) => (
-        <div key={p.dataKey} style={{ color: p.color, marginTop: 2 }}>
-          {p.name}: {fmt(p.value)}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function MonthlyComparisonChart({ data }) {
-  if (!data.length) {
-    return (
-      <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-muted)' }}>
-        <p style={{ fontSize: 32, marginBottom: 8 }}>📈</p>
-        <p>Sem histórico suficiente ainda.</p>
-      </div>
-    );
-  }
-  return (
-    <ResponsiveContainer width="100%" height={280}>
-      <BarChart data={data} margin={{ top: 28, right: 16, left: 0, bottom: 8 }}>
-        <XAxis dataKey="label" tick={{ fill: '#ffffff', fontSize: 12, fontWeight: 700 }} />
-        <YAxis
-          tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
-          tickFormatter={(v) => fmt(v).replace(/ /, ' ')}
-          width={90}
-        />
-        <Tooltip content={<MonthlyTooltip />} cursor={{ fill: '#ffffff0d' }} />
-        <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Bar dataKey="total_in" name="Receitas" fill="#00ff88" radius={[6, 6, 0, 0]}>
-          <LabelList dataKey="total_in" position="top" formatter={fmt} style={{ fill: '#ffffff', fontWeight: 700, fontSize: 11 }} />
-        </Bar>
-        <Bar dataKey="total_out" name="Despesas" fill="#ff3b3b" radius={[6, 6, 0, 0]}>
-          <LabelList dataKey="total_out" position="top" formatter={fmt} style={{ fill: '#ffffff', fontWeight: 700, fontSize: 11 }} />
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
-  );
-}
-
 export default function Dashboard() {
   const { user } = useAuth();
   const now = new Date();
@@ -189,7 +137,6 @@ export default function Dashboard() {
   const [year, setYear] = useState(now.getFullYear());
   const [summary, setSummary] = useState(null);
   const [byCategory, setByCategory] = useState([]);
-  const [monthly, setMonthly] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -201,12 +148,6 @@ export default function Dashboard() {
     ]).then(([sumRes, txRes]) => {
       setSummary(sumRes.data?.summary || {});
       setByCategory(sumRes.data?.byCategory || []);
-      const monthlyRaw = sumRes.data?.monthly || [];
-      setMonthly(monthlyRaw.map((m) => ({
-        label: `${MONTH_ABBR[parseInt(m.month) - 1]}/${String(m.year).slice(2)}`,
-        total_in: parseFloat(m.total_in || 0),
-        total_out: parseFloat(m.total_out || 0),
-      })));
       const txList = txRes.data?.transactions || txRes.data || [];
       const list = Array.isArray(txList) ? txList : [];
       setTransactions(list.slice(0, 5));
@@ -279,21 +220,6 @@ export default function Dashboard() {
               <h2 style={{ fontSize: 16 }}>Maiores Gastos por Categoria <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: 12 }}>({monthLabel.toLowerCase()})</span></h2>
             </div>
             <ExpensesByCategoryChart data={categoryTotals} />
-          </div>
-
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, marginBottom: 24 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h2 style={{ fontSize: 16 }}>Comparação de Meses <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: 12 }}>(últimos 6 meses)</span></h2>
-            </div>
-            {user?.plan === 'free' ? (
-              <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-muted)' }}>
-                <p style={{ fontSize: 32, marginBottom: 8 }}>🔒</p>
-                <p>Comparação entre meses é exclusiva dos planos Pro e Premium.</p>
-                <Link to="/planos" style={{ color: '#6c63ff', fontSize: 13 }}>Ver planos →</Link>
-              </div>
-            ) : (
-              <MonthlyComparisonChart data={monthly} />
-            )}
           </div>
 
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 24 }}>
