@@ -4,8 +4,12 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, Legend,
-  ResponsiveContainer, CartesianGrid,
+  ResponsiveContainer, CartesianGrid, LabelList,
 } from 'recharts';
+
+const COLOR_RECEITAS = '#00ff88';
+const COLOR_DESPESAS = '#ff3b3b';
+const LABEL_STYLE = { fill: '#ffffff', fontWeight: 700, fontSize: 11 };
 
 const MONTH_ABBR = [
   'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
@@ -109,7 +113,7 @@ export default function Comparativo() {
         ) : (
           <ResponsiveContainer width="100%" height={360}>
             {view === 'bar' ? (
-              <BarChart data={monthly} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+              <BarChart data={monthly} margin={{ top: 28, right: 16, left: 0, bottom: 8 }}>
                 <XAxis dataKey="label" tick={{ fill: '#ffffff', fontSize: 12, fontWeight: 700 }} />
                 <YAxis
                   tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
@@ -118,11 +122,15 @@ export default function Comparativo() {
                 />
                 <Tooltip content={<ComparativoTooltip />} cursor={{ fill: '#ffffff0d' }} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="Receitas" fill="#00ff88" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="Despesas" fill="#ff6b9d" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="Receitas" fill={COLOR_RECEITAS} radius={[6, 6, 0, 0]}>
+                  <LabelList dataKey="Receitas" position="top" formatter={fmt} style={LABEL_STYLE} />
+                </Bar>
+                <Bar dataKey="Despesas" fill={COLOR_DESPESAS} radius={[6, 6, 0, 0]}>
+                  <LabelList dataKey="Despesas" position="top" formatter={fmt} style={LABEL_STYLE} />
+                </Bar>
               </BarChart>
             ) : (
-              <LineChart data={monthly} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+              <LineChart data={monthly} margin={{ top: 28, right: 16, left: 0, bottom: 8 }}>
                 <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
                 <XAxis dataKey="label" tick={{ fill: '#ffffff', fontSize: 12, fontWeight: 700 }} />
                 <YAxis
@@ -132,8 +140,12 @@ export default function Comparativo() {
                 />
                 <Tooltip content={<ComparativoTooltip />} cursor={{ stroke: 'var(--border)' }} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Line type="monotone" dataKey="Receitas" stroke="#00ff88" strokeWidth={3} dot={{ r: 4 }} />
-                <Line type="monotone" dataKey="Despesas" stroke="#ff6b9d" strokeWidth={3} dot={{ r: 4 }} />
+                <Line type="monotone" dataKey="Receitas" stroke={COLOR_RECEITAS} strokeWidth={3} dot={{ r: 4, fill: COLOR_RECEITAS }}>
+                  <LabelList dataKey="Receitas" position="top" formatter={fmt} style={LABEL_STYLE} />
+                </Line>
+                <Line type="monotone" dataKey="Despesas" stroke={COLOR_DESPESAS} strokeWidth={3} dot={{ r: 4, fill: COLOR_DESPESAS }}>
+                  <LabelList dataKey="Despesas" position="top" formatter={fmt} style={LABEL_STYLE} />
+                </Line>
               </LineChart>
             )}
           </ResponsiveContainer>

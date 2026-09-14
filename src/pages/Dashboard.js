@@ -162,7 +162,7 @@ function MonthlyComparisonChart({ data }) {
   }
   return (
     <ResponsiveContainer width="100%" height={280}>
-      <BarChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+      <BarChart data={data} margin={{ top: 28, right: 16, left: 0, bottom: 8 }}>
         <XAxis dataKey="label" tick={{ fill: '#ffffff', fontSize: 12, fontWeight: 700 }} />
         <YAxis
           tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
@@ -171,8 +171,12 @@ function MonthlyComparisonChart({ data }) {
         />
         <Tooltip content={<MonthlyTooltip />} cursor={{ fill: '#ffffff0d' }} />
         <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Bar dataKey="total_in" name="Receitas" fill="#00ff88" radius={[6, 6, 0, 0]} />
-        <Bar dataKey="total_out" name="Despesas" fill="#ff6b9d" radius={[6, 6, 0, 0]} />
+        <Bar dataKey="total_in" name="Receitas" fill="#00ff88" radius={[6, 6, 0, 0]}>
+          <LabelList dataKey="total_in" position="top" formatter={fmt} style={{ fill: '#ffffff', fontWeight: 700, fontSize: 11 }} />
+        </Bar>
+        <Bar dataKey="total_out" name="Despesas" fill="#ff3b3b" radius={[6, 6, 0, 0]}>
+          <LabelList dataKey="total_out" position="top" formatter={fmt} style={{ fill: '#ffffff', fontWeight: 700, fontSize: 11 }} />
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   );
