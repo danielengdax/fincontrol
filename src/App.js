@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
+import Comparativo from './pages/Comparativo';
 import Budget from './pages/Budget';
 import Plans from './pages/Plans';
 import Landing from './pages/Landing';
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/cadastro" element={<PublicRoute><Register /></PublicRoute>} />
           <Route path="/dashboard" element={<PrivateRoute><Layout><Dashboard /></Layout></PrivateRoute>} />
           <Route path="/transacoes" element={<PrivateRoute><Layout><Transactions /></Layout></PrivateRoute>} />
+          <Route path="/comparativo" element={<PrivateRoute><Layout><Comparativo /></Layout></PrivateRoute>} />
           <Route path="/orcamento" element={<PrivateRoute><Layout><Budget /></Layout></PrivateRoute>} />
           <Route path="/planos" element={<PrivateRoute><Layout><Plans /></Layout></PrivateRoute>} />
         </Routes>

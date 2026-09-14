@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: '⊞' },
   { path: '/transacoes', label: 'Transações', icon: '↕' },
+  { path: '/comparativo', label: 'Comparativo', icon: '▤' },
   { path: '/orcamento', label: 'Orçamento', icon: '◎' },
   { path: '/planos', label: 'Planos', icon: '★' },
 ];
